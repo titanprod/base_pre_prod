@@ -1,0 +1,109 @@
+// compile g++ -std=c++17 main.cpp BinanceOrder.cpp BinanceSession.cpp -o binance_async \
+    -lssl -lcrypto -lpthread -lboost_system
+
+
+/// Description
+✅ main.cpp
+🔧 Purpose:
+This is the entry point of the application. It creates the io_context, ssl::context, and starts multiple order requests (buy/sell) through separate Binance sessions.
+
+📌 What it does:
+Creates shared SSL context (ssl::context)
+
+Instantiates multiple BinanceSession objects (one per order)
+
+Submits asynchronous limit orders (buy/sell) using BinanceOrder
+
+Starts the Boost.Asio event loop with ioc.run()
+
+✅ BinanceOrder.hpp
+🔧 Purpose:
+This is the header file for the BinanceOrder class, which:
+
+Manages the construction and asynchronous execution of limit orders
+
+Stores configuration like price, quantity, symbol, and side (buy/sell)
+
+Provides an interface to submit or cancel the order
+
+📌 What it defines:
+The BinanceOrder class
+
+Member functions:
+
+send(): submits the order
+
+cancel(): cancels a previously submitted order
+
+Member variables:
+
+Symbol, price, quantity, side
+
+A pointer to the BinanceSession used for HTTP communication
+
+✅ BinanceOrder.cpp
+🔧 Purpose:
+This is the implementation file for BinanceOrder.
+
+📌 What it does:
+Formats and signs the Binance limit order (using HMAC-SHA256)
+
+Calls the session's async_post() to send the order
+
+Parses and logs the HTTP response from Binance
+
+Optionally calls cancel() to send a cancel request for an existing order
+
+✅ BinanceSession.hpp
+🔧 Purpose:
+This defines the BinanceSession class, which handles:
+
+HTTPS connections (with SSL)
+
+Async HTTP requests to the Binance API
+
+Connection lifecycle (DNS resolve, TCP connect, SSL handshake)
+
+📌 What it defines:
+The BinanceSession class
+
+Constructor accepting io_context and ssl::context
+
+Async methods:
+
+async_post() — sends an HTTP POST request
+
+cancel_order() — sends an HTTP DELETE request to cancel an order
+
+Internal async methods:
+
+on_resolve(), on_connect(), on_handshake(), etc.
+
+✅ BinanceSession.cpp
+🔧 Purpose:
+This file implements the BinanceSession class.
+
+📌 What it does:
+Resolves the Binance hostname asynchronously
+
+Connects to Binance via TCP and SSL handshake
+
+Executes HTTPS POST/DELETE using Boost.Beast
+
+Uses shared pointers to allow lifetime management during async operations
+
+Logs errors or responses on completion
+
+🔁 How They Work Together
+main.cpp creates sessions and submits orders:
+
+cpp
+
+auto buy_order = std::make_shared<BinanceOrder>(...);
+buy_order->send();
+BinanceOrder prepares the HTTP request (order or cancellation), signs it, and calls BinanceSession::async_post().
+
+BinanceSession manages the entire HTTPS communication asynchronously using Boost.Asio and Boost.Beast.
+
+ioc.run() in main.cpp keeps everything going until all operations complete.
+
