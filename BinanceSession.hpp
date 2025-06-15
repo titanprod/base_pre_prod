@@ -5,12 +5,38 @@
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <functional>
+#include <boost/beast.hpp>
+#include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
+#include <openssl/hmac.h>
+#include <chrono>
+#include <iostream>
+#include <memory>
+#include <boost/beast.hpp>
+#include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
+#include <openssl/hmac.h>
+#include <chrono>
+#include <iostream>
+#include <memory>
+#include <boost/beast/core.hpp>
+#include <boost/beast/http.hpp>
+#include <boost/beast/ssl.hpp>
+#include <boost/asio/connect.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/ssl/error.hpp>
+#include <boost/asio/ssl/stream.hpp>
+#include <nlohmann/json.hpp>
+#include <iostream>
+#include <string>
+#include <boost/beast/version.hpp>
 
 class BinanceSession : public std::enable_shared_from_this<BinanceSession> {
 public:
     BinanceSession(boost::asio::io_context& ioc, boost::asio::ssl::context& ctx);
 
-    void connect_and_handshake(std::function<void()> on_connected);
+    void connect_and_handshake(std::function<void()> on_connected,
+    std::function<void(boost::system::error_code)> on_error);
 
     void send_request(boost::beast::http::request<boost::beast::http::string_body> req,
                       std::function<void(boost::beast::http::response<boost::beast::http::string_body>)> on_response,
